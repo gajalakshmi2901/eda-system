@@ -1,0 +1,111 @@
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style("darkgrid")
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+/kaggle/input/cities-in-tamil-nadu-population-statistics/Cities and Towns in Tamil Nadu - Population statistics.csv
+df = pd.read_csv("../input/cities-in-tamil-nadu-population-statistics/Cities and Towns in Tamil Nadu - Population statistics.csv")
+df.head()
+Name	Status
+df.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1096 entries, 0 to 1095
+Data columns (total 6 columns):
+ #   Column                        Non-Null Count  Dtype 
+---  ------                        --------------  ----- 
+ 0   Name                          1096 non-null   object
+ 1   Status                        1096 non-null   object
+ 2   District                      1096 non-null   object
+ 3   Population
+Census
+1991-03-01  1096 non-null   object
+ 4   Population
+Census
+2001-03-01  1096 non-null   object
+ 5   Population
+df.shape
+(1096, 6)
+df.replace(',','', regex=True, inplace=True)
+df.head()
+Name	Status	District	Population\nCensus\n1991-03-01	Population\nCensus\n2001-03-01	Population\nCensus\n2011-03-01
+0	Abiramam	Town Panchayat	Ramanathapuram	...	6638	8144
+1	Acharapakkam	Town Panchayat	Kanchipuram	...	9023	10362
+2	Achipatti	Census Town	Coimbatore	...	7448	9849
+3	Adaikkakuzhi	Census Town	Kanniyakumari	...	...	8888
+4	Adikaratti	Town Panchayat	The Nilgiris	...	16003	14178
+df = df.rename(columns = {'Population\nCensus\n1991-03-01': '1991'}, inplace = False)
+df = df.rename(columns = {'Population\nCensus\n2001-03-01': '2001'}, inplace = False)
+df = df.rename(columns = {'Population\nCensus\n2011-03-01': '2011'}, inplace = False)
+df.head()
+Name	Status	District	1991	2001	2011
+0	Abiramam	Town Panchayat	Ramanathapuram	...	6638	8144
+1	Acharapakkam	Town Panchayat	Kanchipuram	...	9023	10362
+2	Achipatti	Census Town	Coimbatore	...	7448	9849
+3	Adaikkakuzhi	Census Town	Kanniyakumari	...	...	8888
+4	Adikaratti	Town Panchayat	The Nilgiris	...	16003	14178
+df = df[(df['1991'] != '...')]
+df.head()
+Name	Status	District	1991	2001	2011
+5	Adiramapattinam (Adirampattinam)	Town Panchayat	Thanjavur	26645	27657	31066
+14	Alandur	Municipality	Kanchipuram	125244	146287	164430
+17	Alangudi	Town Panchayat	Pudukkottai	10882	10761	12367
+22	Allapuram	Town Panchayat	Vellore	21424	26948	31211
+27	Ambasamudram	Municipality	Tirunelveli	33893	32739	35645
+df['1991'] = pd.to_numeric(df['1991'])
+df['2001'] = pd.to_numeric(df['2001'])
+df['2011'] = pd.to_numeric(df['2011'])
+df.info()
+<class 'pandas.core.frame.DataFrame'>
+Int64Index: 303 entries, 5 to 1092
+Data columns (total 6 columns):
+ #   Column    Non-Null Count  Dtype 
+---  ------    --------------  ----- 
+ 0   Name      303 non-null    object
+ 1   Status    303 non-null    object
+ 2   District  303 non-null    object
+ 3   1991      303 non-null    int64 
+ 4   2001      303 non-null    int64 
+ 5   2011      303 non-null    int64 
+dtypes: int64(3), object(3)
+memory usage: 16.6+ KB
+Status = df['Status'].unique()
+Status
+array(['Town Panchayat', 'Municipality', 'Census Town', 'Township',
+       'Municipal Corporation', 'Municipality with Outgrowth',
+       'Town Panchayat with Outgrowth', 'Cantonment (Board)'],
+      dtype=object)
+df_sum = df.groupby('Status').sum()
+df_sum
+1991	2001	2011
+Status			
+Cantonment (Board)	59508	62370	63257
+Census Town	451937	641476	888783
+Municipal Corporation	7258365	8952421	9890695
+Municipality	7427868	8582448	9905271
+Municipality with Outgrowth	220056	287971	456791
+Town Panchayat	1676813	1958690	2353847
+Town Panchayat with Outgrowth	10739	17511	29250
+Township	123642	132861	110169
+N = len(Status)
+sum_1991 = df_sum['1991']
+sum_2001 = df_sum['2001']
+sum_2011 = df_sum['2011']
+
+ind = np.arange(N) 
+width = 0.35       
+plt.bar(ind, sum_1991, width, label='1991')
+plt.bar(ind + width, sum_2001, width, label='2001')
+plt.bar(ind + 2*width, sum_2011, width, label='2011')
+
+plt.xlabel('Status of city/town in Tamil Nadu')
+plt.ylabel('Population')
+plt.title('Population growth over years in Tamil Nadu')
+
+plt.xticks(ind + width / 2, Status)
+plt.xticks(rotation=90)
+plt.legend(loc='best')
+plt.show()
